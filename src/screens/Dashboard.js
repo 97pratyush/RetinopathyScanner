@@ -31,8 +31,26 @@ export default function Dashboard({ navigation }) {
 
     if (!result.cancelled) {
       setImage(result.uri);
-    }
-  };
+      var form = new FormData();
+      form.append('dashboard',result);
+      fetch(
+        'https://webhook.site/5cd1487f-0ce3-4aa6-8d06-0f254efde0e8',
+        {
+          body: form,
+          method: "PUT",
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      ).then((response) => response.json())
+      .catch((error) => {
+        console.error(error);
+      })
+      .then((responseData) => {
+        console.log("Success "+ responseData)
+      }).catch((error) => console.error(error));
+    };
+}
 
   return (
     <Background>

