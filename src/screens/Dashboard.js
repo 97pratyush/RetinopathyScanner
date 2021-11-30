@@ -6,21 +6,12 @@ import Button from '../components/Button'
 import { useState, useEffect } from 'react'
 import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'react-native';
+import Paragraph from '../components/Paragraph'
 
 export default function Dashboard({ navigation }) {
   const [image, setImage] = useState(null);
+  const [percentageResult, setResult] = useState(null);  
 
-  // useEffect(() => {
-  //   (async () => {
-  //     if (Platform.OS !== 'web') {
-  //       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  //       if (status !== 'granted') {
-  //         alert('Storage permission is needed to upload image!');
-  //       }
-  //     }
-  //   })();
-  // }, []);
-  
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -49,6 +40,15 @@ export default function Dashboard({ navigation }) {
       .then((responseData) => {
         console.log("Success "+ responseData)
       }).catch((error) => console.error(error));
+
+      try {
+          const apiCall = fetch('https://api/result');
+          const finalResult = apiCall.json();
+          setResult(finalResult);
+      } catch(err) {
+          console.log("Error fetching data-----------", err);
+      };
+
     };
 }
 
@@ -57,7 +57,10 @@ export default function Dashboard({ navigation }) {
       <Logo />
       <Header>Upload eye scan below</Header>
       <Button onPress={pickImage}> Upload </Button>
-      {image && <Image source={{ uri: image }} style={{ width: 200, height: 200 }} />}      
+      { image && 
+      <Image source={{ uri: image }} style={{ width: 200, height: 200 }} /> &&
+      <Header> Result : { percentageResult }</Header> 
+      }      
       <Button
         mode="outlined"
         onPress={() =>
