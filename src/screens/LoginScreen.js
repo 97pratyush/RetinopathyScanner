@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { TouchableOpacity, StyleSheet, View } from 'react-native'
 import { Text } from 'react-native-paper'
 import Background from '../components/Background'
@@ -10,23 +10,25 @@ import BackButton from '../components/BackButton'
 import { theme } from '../core/theme'
 import { emailValidator } from '../helpers/emailValidator'
 import { passwordValidator } from '../helpers/passwordValidator'
+import deviceStorage from '../helpers/deviceStorage'
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState({ value: '', error: '' })
   const [password, setPassword] = useState({ value: '', error: '' })
+  let dataSent = false;
 
   const onLoginPressed = () => {
     const emailError = emailValidator(email.value)
     const passwordError = passwordValidator(password.value)
+
     if (emailError || passwordError) {
       setEmail({ ...email, error: emailError })
       setPassword({ ...password, error: passwordError })
       return
     }
     try{
-      fetch('https://webhook.site/5cd1487f-0ce3-4aa6-8d06-0f254efde0e8',{
-        method: 'post',
-        mode: 'no-cors',
+      fetch('http://ec2-3-145-72-186.us-east-2.compute.amazonaws.com:5000/login',{
+        method: 'POST',
         headers:{
           'Accept': 'application/json',
           'Content-Type': 'application/json'
@@ -35,26 +37,49 @@ export default function LoginScreen({ navigation }) {
           username: email.value,
           password: password.value
         })
-      });
-
-      // const fetchData = () => {
-      //   return fetch("https://randomuser.me/api/")
-      //         .then((response) => response.json())
-      //         .then((data) => console.log(data));
-      //       }
-
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'Dashboard' }],
       })
+      .then((resp)=>resp.json())
+      .then((response)=>{
+        console.log(response.token)
+        console.log(response)
+        if(response.token === null) throw new Error('Wrong Login');
+        deviceStorage.saveItem("jwt_token", response.token); //Check if this works.
+        navigation.navigate('Dashboard');
+      })
+        .catch((error) => {
+          console.error(error)
+          alert('Wrong Credentials');
+          navigation.navigate('StartScreen');
+          
+        })
+      dataSent = true;
     }catch(e){
       console.log(e);
     }
 
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'Dashboard' }],
-    })
+    // Fetching result from backend API
+    if(dataSent) {
+      // useEffect(() => {
+        // fetch('http://ec2-3-145-72-186.us-east-2.compute.amazonaws.com:5000/login')
+        // .then((response) => {
+        //   console.log(response.status)
+        //   if(response.status != 200) throw new Error()
+        //   if(response.token === null) throw new error('Wrong Login');
+        //   deviceStorage.saveItem("jwt_token", response.token); //Check if this works.
+        //   navigation.navigate('Dashboard');
+        // })
+        //   .catch((error) => {
+        //     console.error(error)
+        //     alert('Wrong Credentials');
+        //     navigation.navigate('StartScreen');
+            
+        //   })
+      // }, []);
+
+      // Navigate to dashboard 
+      // navigation.navigate('Dashboard');
+
+    }
   }
 
   return (

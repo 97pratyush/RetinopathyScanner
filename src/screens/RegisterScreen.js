@@ -27,9 +27,10 @@ export default function RegisterScreen({ navigation }) {
       setPassword({ ...password, error: passwordError })
       return
     }
-
       try{
-        fetch('https://webhook.site/5cd1487f-0ce3-4aa6-8d06-0f254efde0e8',{
+        console.log(email.value);
+        console.log(password.value);
+        fetch('http://ec2-3-145-72-186.us-east-2.compute.amazonaws.com:5000/signup',{
           method: 'post',
           mode: 'no-cors',
           headers:{
@@ -40,12 +41,14 @@ export default function RegisterScreen({ navigation }) {
             username: email.value,
             password: password.value
           })
-        });
-
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'Dashboard' }],
         })
+        .then((response)=>response.json()) //   <------ this line 
+        .then((response)=>{
+          console.log(response);
+          return response ;
+        });;
+
+        navigation.navigate('LoginScreen');
       }catch(e){
         console.log(e);
       }

@@ -3,71 +3,71 @@ import Background from '../components/Background'
 import Logo from '../components/Logo'
 import Header from '../components/Header'
 import Button from '../components/Button'
-import { useState, useEffect } from 'react'
-import * as ImagePicker from 'expo-image-picker';
-import { Image } from 'react-native';
 import Paragraph from '../components/Paragraph'
+import { useState, useEffect } from 'react'
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as DocumentPicker from 'expo-document-picker';
 
 export default function Dashboard({ navigation }) {
-  const [image, setImage] = useState(null);
+  const [loaded, setLoad] = useState(null);
   const [percentageResult, setResult] = useState(null);  
+  const [jwt_token, setToken] = useState(null);
 
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: false,
-      aspect: [4, 3],
-      quality: 1,
-    });
+  const getData = async () => {
+    try {
+      const value = await AsyncStorage.getItem('jwt_token')
+      if(value !== null) {
+        setToken(value)
+      }
+     } catch(e) {
+      console.log('AsyncStorage Error' + e.message);
+    }
+  }
 
-    if (!result.cancelled) {
-      setImage(result.uri);
-      var form = new FormData();
-      form.append('dashboard',result);
+  const UploadFile = async () => {
+    let result = await DocumentPicker.getDocumentAsync({});
+    var form = new FormData();
+      // console.log(result);
+      let token = await AsyncStorage.getItem('jwt_token');
+      form.append('image', result.file);
+      // form.append('token', 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6ImFiY2QifQ.0064Yy1voJSJJpge3zmDNEQT5LakV7C1uTL1Qw5nYMs');
+      form.append('token', token);
       fetch(
-        'https://webhook.site/5cd1487f-0ce3-4aa6-8d06-0f254efde0e8',
+        'http://ec2-3-145-72-186.us-east-2.compute.amazonaws.com:5000/checkImage',
         {
           body: form,
-          method: "PUT",
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
+          method: "POST"
         }
-      ).then((response) => response.json())
+      ).then((response) => 
+      {
+        return response.json()
+      })
+      .then((json)=>{
+        console.log(json);
+        //getData()
+        setLoad(true)
+        setResult(json.result);
+      })
       .catch((error) => {
         console.error(error);
-      })
-      .then((responseData) => {
-        console.log("Success "+ responseData)
-      }).catch((error) => console.error(error));
-
-      try {
-          const apiCall = fetch('https://api/result');
-          const finalResult = apiCall.json();
-          setResult(finalResult);
-      } catch(err) {
-          console.log("Error fetching data-----------", err);
-      };
-
-    };
-}
+      });
+  }
 
   return (
     <Background>
       <Logo />
       <Header>Upload eye scan below</Header>
-      <Button onPress={pickImage}> Upload </Button>
-      { image && 
-      <Image source={{ uri: image }} style={{ width: 200, height: 200 }} /> &&
-      <Header> Result : { percentageResult }</Header> 
-      }      
+      {!loaded && <Button onPress={UploadFile}> Upload </Button>}
+      { loaded && <Paragraph> Result : { percentageResult } </Paragraph> }      
       <Button
         mode="outlined"
-        onPress={() =>
+        onPress={() =>{
+          AsyncStorage.removeItem('jwt_token')
           navigation.reset({
             index: 0,
             routes: [{ name: 'StartScreen' }],
           })
+        }
         }
       >
         Logout
