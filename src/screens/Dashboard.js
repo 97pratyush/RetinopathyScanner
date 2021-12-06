@@ -7,11 +7,15 @@ import Paragraph from '../components/Paragraph'
 import { useState, useEffect } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as DocumentPicker from 'expo-document-picker';
+import { Image } from 'react-native';
 
 export default function Dashboard({ navigation }) {
   const [loaded, setLoad] = useState(null);
   const [percentageResult, setResult] = useState(null);  
   const [jwt_token, setToken] = useState(null);
+  const [probability, setProbability] = useState(null);
+  const [image, setImage] = useState(null);
+  const [articles, setArticles] = useState(null);
 
   const getData = async () => {
     try {
@@ -27,25 +31,22 @@ export default function Dashboard({ navigation }) {
   const UploadFile = async () => {
     let result = await DocumentPicker.getDocumentAsync({});
     var form = new FormData();
-      // console.log(result);
       let token = await AsyncStorage.getItem('jwt_token');
       form.append('image', result.file);
-      // form.append('token', 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6ImFiY2QifQ.0064Yy1voJSJJpge3zmDNEQT5LakV7C1uTL1Qw5nYMs');
       form.append('token', token);
       fetch(
-        'http://ec2-3-145-72-186.us-east-2.compute.amazonaws.com:5000/checkImage',
-        {
+        'http://ec2-3-145-72-186.us-east-2.compute.amazonaws.com:5000/checkImage', {
           body: form,
           method: "POST"
         }
-      ).then((response) => 
-      {
+      ).then((response) => {
         return response.json()
       })
       .then((json)=>{
         console.log(json);
-        //getData()
-        setLoad(true)
+        setLoad(true);
+        setProbability(json.probab);
+        setImage(result.uri);
         setResult(json.result);
       })
       .catch((error) => {
@@ -58,7 +59,8 @@ export default function Dashboard({ navigation }) {
       <Logo />
       <Header>Upload eye scan below</Header>
       {!loaded && <Button onPress={UploadFile}> Upload </Button>}
-      { loaded && <Paragraph> Result : { percentageResult } </Paragraph> }      
+      {image && <Image source={{ uri: image }} style={{ width: 200, height: 200 }} />}
+      { loaded && <Header>{ percentageResult }. Confidence on outcome : { Math.round(probability*10000)/100 }%</Header> }      
       <Button
         mode="outlined"
         onPress={() =>{

@@ -8,8 +8,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 export default function StartScreen({ navigation }) {
-  const [token,setToken]= useState("");
-useEffect(()=> {
+  
+  useEffect(()=> {
   AsyncStorage.getItem('jwt_token').then((token)=>{
     console.log(token !== "null")
     if(token && token !== null && token !== "")
@@ -22,6 +22,7 @@ useEffect(()=> {
 
   })
 })
+
   return (
     <Background>
       <Logo />

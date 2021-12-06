@@ -56,30 +56,6 @@ export default function LoginScreen({ navigation }) {
     }catch(e){
       console.log(e);
     }
-
-    // Fetching result from backend API
-    if(dataSent) {
-      // useEffect(() => {
-        // fetch('http://ec2-3-145-72-186.us-east-2.compute.amazonaws.com:5000/login')
-        // .then((response) => {
-        //   console.log(response.status)
-        //   if(response.status != 200) throw new Error()
-        //   if(response.token === null) throw new error('Wrong Login');
-        //   deviceStorage.saveItem("jwt_token", response.token); //Check if this works.
-        //   navigation.navigate('Dashboard');
-        // })
-        //   .catch((error) => {
-        //     console.error(error)
-        //     alert('Wrong Credentials');
-        //     navigation.navigate('StartScreen');
-            
-        //   })
-      // }, []);
-
-      // Navigate to dashboard 
-      // navigation.navigate('Dashboard');
-
-    }
   }
 
   return (
